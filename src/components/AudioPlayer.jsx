@@ -5,6 +5,7 @@ const AudioPlayer = ({ audio_sources, source_index }) => {
 	const [audioStream, setAudioStream] = useState({}); //audio source
 	const [isPlaying, setIsPlaying] = useState(false); // playing status
 	const [mousePosition, setMousePosition] = useState({ x: 0 });
+	const [isDragging, setIsDragging] = useState(false);
 	const [btnPlayPause, setbtnPlayPause] = useState(
 		"0 0, 50% 25%, 50% 75%, 50% 75%, 50% 25%, 100% 50%, 100% 50%, 0 100%"
 	);
@@ -66,12 +67,20 @@ const AudioPlayer = ({ audio_sources, source_index }) => {
 			audioElement.current.currentTime =
 				((newTime - 50) / 100) * audioStream.duration;
 		}
-
+		function handleMouseUp() {
+			setIsDragging(false);
+		}
 		const div = progressBarElem.current;
 		div.addEventListener("mousemove", handleMouseMove);
-
+		div.addEventListener("mousedown", (event) => {
+			setIsDragging(true);
+		});
 		return () => {
 			div.removeEventListener("mousemove", handleMouseMove);
+			div.removeEventListener("mousedown", (event) => {
+				setIsDragging(true);
+			});
+			div.removeEventListener("mouseup", handleMouseUp);
 		};
 	}, [isPlaying, audioStream, progressBarElem, mousePosition]);
 
