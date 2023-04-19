@@ -1,16 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
-import AudioWaveform from "./AudioWaveform";
+// import AudioWaveform from "./AudioWaveform";
 
 const AudioPlayer = ({ audio_sources, source_index }) => {
 	const [audioStream, setAudioStream] = useState({}); //audio source
 	const [isPlaying, setIsPlaying] = useState(false); // playing status
+	const [mousePosition, setMousePosition] = useState({ x: 0 });
 	const [btnPlayPause, setbtnPlayPause] = useState(
 		"0 0, 50% 25%, 50% 75%, 50% 75%, 50% 25%, 100% 50%, 100% 50%, 0 100%"
 	);
-	const [drag, setDrag] = useState(false);
-	// const [currentAudio, setCurrentAudio] = useState(
-	// 	audio_sources[source_index]
-	// );
 
 	const audioElement = useRef();
 	const progressBarElem = useRef();
@@ -24,7 +21,25 @@ const AudioPlayer = ({ audio_sources, source_index }) => {
 			duration: duration,
 		});
 	};
+	// const checkWidth = (e) => {
+	// 	let width = progressBarElem?.current?.clientWidth;
+	// 	// const offset = e.nativeEvent.clientX;
+	// 	// console.log(offset);
 
+	// 	const newTime = (mousePosition.x / width) * 100;
+	// 	audioStream.duration === undefined
+	// 		? (audioStream.duration = 1)
+	// 		: audioStream.duration;
+
+	// 	audioElement.current.currentTime =
+	// 		((newTime - 50) / 100) * audioStream.duration;
+
+	// 	console.log(audioElement.current.currentTime);
+	// };
+
+	const handlePlayPause = () => {
+		setIsPlaying(!isPlaying);
+	};
 	useEffect(() => {
 		if (isPlaying) {
 			audioElement?.current?.play();
@@ -40,26 +55,30 @@ const AudioPlayer = ({ audio_sources, source_index }) => {
 				"0 0, 50% 25%, 50% 75%, 50% 75%, 50% 25%, 100% 50%, 100% 50%, 0 100%"
 			);
 		}
-	}, [isPlaying, audioStream]);
+		function handleMouseMove(event) {
+			setMousePosition({ x: event.clientX });
+			let width = progressBarElem?.current?.clientWidth;
+			const newTime = (mousePosition.x / width) * 100;
+			audioStream.duration === undefined
+				? (audioStream.duration = 1)
+				: audioStream.duration;
+			console.log(mousePosition.x);
+			audioElement.current.currentTime =
+				((newTime - 50) / 100) * audioStream.duration;
+		}
 
-	const checkWidth = (e) => {
-		let width = progressBarElem?.current?.clientWidth;
-		const offset = e.nativeEvent.clientX;
-		const newTime = (offset / width) * 100;
+		const div = progressBarElem.current;
+		div.addEventListener("mousemove", handleMouseMove);
 
-		audioElement.current.currentTime =
-			((newTime - 50) / 100) * audioStream.duration;
-
-		// console.log(progress);
-	};
-
-	const handlePlayPause = () => {
-		setIsPlaying(!isPlaying);
-	};
+		return () => {
+			div.removeEventListener("mousemove", handleMouseMove);
+		};
+	}, [isPlaying, audioStream, progressBarElem, mousePosition]);
 
 	return (
-		<div className="bg-white flex flex-col justify-center h-screen items-center m-auto max-w-screen">
-			<AudioWaveform audioUrl={"/ex.mp3"} />
+		<div className="bg-zinc-600 flex flex-col justify-center h-screen items-center m-auto max-w-screen">
+			<div className="text-white">Mouse position: {mousePosition.x}</div>
+			{/* <AudioWaveform audioUrl={"/ex.mp3"} /> */}
 			<div className=" w-screen flex flex-col justify-center items-center">
 				<audio
 					src="/ex.mp3"
@@ -69,11 +88,11 @@ const AudioPlayer = ({ audio_sources, source_index }) => {
 				{/* Progress bar */}
 				<div
 					className="h-4 w-1/2 bg-white flex justify-start items-center"
-					onClick={(e) => checkWidth(e)}
+					// onClick={(e) => checkWidth(e)}
 					ref={progressBarElem}
 				>
 					<div
-						className={`h-full bg-opacity-50 bg-black transition-all`}
+						className={`h-full bg-opacity-50 bg-black `}
 						style={{ width: `${audioStream.progress}%` }}
 					></div>
 				</div>
